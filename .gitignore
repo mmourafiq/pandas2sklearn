@@ -55,3 +55,10 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Mr Developer
+.mr.developer.cfg
+.pydevproject
+.project
+.settings/
+.idea/
