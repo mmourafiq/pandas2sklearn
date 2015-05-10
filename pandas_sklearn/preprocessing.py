@@ -1,13 +1,13 @@
 from collections import namedtuple
 import pandas as pd
 import numpy as np
+import sklearn
 from sklearn import preprocessing
 
 
 ALL = 'ALL'
 INCLUDE = 'INCLUDE'
 EXCLUDE = 'EXCLUDE'
-
 
 DATA_SET = namedtuple(
     'DataSet',
@@ -218,3 +218,40 @@ def median_absolute_deviation(data, c=0.6745, multiplier=3, median=None):
     # truncate data larger than mad * multiplier
     data = np.minimum(data, median + multiplier * mad)
     return data
+
+
+def transform_data(data_set, stats, integer_columns_slice=None,
+                   category_columns_slice=None):
+    data = data_set.data
+
+    data_numeric = data[:, slice(*integer_columns_slice)]
+    data_category = data[:, slice(*category_columns_slice)]
+    features_names_integer = data_set.feature_names[slice(*integer_columns_slice)]
+
+    # custom Mean normalization, since data is spread on several parts
+    data_numeric = standard_scale(data_numeric,
+                                  stats['integer']['mean'].values,
+                                  stats['integer']['std'].values)
+
+    # truncate large integer values to 5x std. dev
+    deviation_of_mean(data=data_numeric, multiplier=5, std=stats['integer']['std'].values)
+
+    data_numeric = [
+        dict((features_names_integer[j], u) for j, u in enumerate(item) if str(u) != 'nan')
+        for item in data_numeric
+    ]
+
+    # categorical features
+    data_category = [dict((u, 1) for u in item if str(u) != 'nan')
+                             for item in data_category]
+
+    # Combine integer & categorical features
+    data_transformed = [dict(x.items() + y.items())
+                        for (x, y) in zip(data_numeric, data_category)]
+
+    # Hash features
+    fh = sklearn.feature_extraction.FeatureHasher(non_negative=True)
+    data_transformed = fh.fit_transform(data_transformed)
+
+    return DATA_SET_TRANSFORMED(data_transformed, data_set.target_names, data_set.target,
+                                data_set.has_target, data_set.ids, data_set.has_ids)
