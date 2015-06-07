@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mouradmourafiq/pandas2sklearn.svg?branch=master)](https://travis-ci.org/mouradmourafiq/pandas2sklearn)
+
 # pandas2sklearn
 An integration of [pandas](http://pandas.pydata.org/) dataframes with [scikit learn](http://scikit-learn.org/stable/).
 

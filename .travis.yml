@@ -1,0 +1,12 @@
+language: python
+python:
+    - "2.7"
+install:
+    - "pip install -r requirements.txt"
+    - "pip install coverage"
+    - "pip install coveralls"
+script:
+    - "py.test"
+    - "coverage run --source=pandas-sklearn setup.py test"
+after_success:
+    coveralls
