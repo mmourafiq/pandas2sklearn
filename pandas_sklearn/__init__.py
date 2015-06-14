@@ -1,6 +1,6 @@
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
-
+import numpy as np
 import pandas as pd
 
 
@@ -37,10 +37,29 @@ class DataSet(object):
             self.set_id(id_column, False)
         self.set_feature_names(usage, columns)
 
-    def __getitem__(self, feature):
-        if feature not in self.feature_names:
-            raise KeyError(feature)
-        return self.df[feature]
+    def __getitem__(self, key):
+        if isinstance(key, str) and self._clean_column(key):
+            return self.df[key].values
+
+        if isinstance(key, (tuple, list)):
+            error_keys = [k for k in key if not self._clean_column(k)]
+            if len(error_keys) > 0:
+                raise KeyError(', '.join(error_keys))
+            return self.df[list(key)].values
+
+        if isinstance(key, pd.Index):
+            error_keys = [k for k in key.values if not self._clean_column(k)]
+            if len(error_keys) > 0:
+                raise KeyError(', '.join(error_keys))
+            return self.df[key].values
+
+        if isinstance(key, np.ndarray):
+            error_keys = [k for k in key if not self._clean_column(k)]
+            if len(error_keys) > 0:
+                raise KeyError(', '.join(error_keys))
+            return self.df[key].values
+
+        raise KeyError(key)
 
     def get_feature_location(self, feature):
         """
@@ -118,7 +137,8 @@ class DataSet(object):
             except TypeError:
                 pass
 
-        return columns_included.difference(columns_excluded)
+        columns_included = columns_included.difference(columns_excluded)
+        return columns_included.intersection(self.df.columns)
 
     def to_dict(self, columns=None):
         """
