@@ -34,6 +34,9 @@ setup(name='pandas2sklearn',
       packages=['pandas_sklearn'],
       keywords=['scikit', 'sklearn', 'pandas'],
       install_requires=[
+          'numpy>=1.9.2',
+          'scipy>=0.15.1'
           'pandas>=0.15.0',
-          'numpy>=1.9.2'
+          'scikit-learn>=0.16.1'
+
       ])
